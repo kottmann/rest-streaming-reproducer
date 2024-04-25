@@ -31,7 +31,7 @@ public class DevModeUsage {
           The InputStream will throw a RuntimeException from read() (exception is logged and stream closes)
           curl "http://localhost:8080/hello?test=RuntimeException" | wc -l
          
-          The InputStream throws an IOException from read, in this case it ends up in an endless loop:
+          The InputStream throws an IOException from read (same behaviour as RuntimeException)
           curl "http://localhost:8080/hello?test=IOException" | wc -l
           """;
 
