@@ -18,6 +18,7 @@ public class GreetingInputStream extends InputStream {
   private int counter = 0;
   private byte[] buffer = new byte[0];
   private int pos;
+  private boolean closed;
 
   public GreetingInputStream(HttpServerRequest request, int n, String test) {
     this.request = request;
@@ -32,27 +33,33 @@ public class GreetingInputStream extends InputStream {
     } else {
       buffer = null;
     }
-
-    if (counter > n/4) {
-        if ("IOException".equalsIgnoreCase(test)) {
-          log.info("Test IO Exception has been thrown!");
-          throw new IOException("Simulated Error");
-        }
-        else if ("RuntimeException".equalsIgnoreCase(test)) {
-          log.info("Test Runtime Exception has been thrown!");
-          throw new RuntimeException("Simulated Error");
-        }
-        else if ("CloseConnection".equalsIgnoreCase(test)) {
-          request.connection().close();
-        }
-    }
   }
 
   @Override
   public int read() throws IOException {
+
+    if (closed) {
+      log.error("Read called after close!");
+      closed = false;
+    }
+
     // If the index is at the end of the buffer, refill the buffer
     if (buffer != null && pos >= buffer.length) {
       fillBufferWithNextLine();
+    }
+
+    if (counter > n/4) {
+      if ("IOException".equalsIgnoreCase(test)) {
+        log.info("Test IO Exception has been thrown!");
+        throw new IOException("Simulated Error");
+      }
+      else if ("RuntimeException".equalsIgnoreCase(test)) {
+        log.info("Test Runtime Exception has been thrown!");
+        throw new RuntimeException("Simulated Error");
+      }
+      else if ("CloseConnection".equalsIgnoreCase(test)) {
+        request.connection().close();
+      }
     }
 
     if (buffer == null) {
@@ -70,6 +77,8 @@ public class GreetingInputStream extends InputStream {
     else {
       log.info("Stream is closed before EOF at " + counter);
     }
+
+    closed = true;
   }
 }
 
